@@ -1,0 +1,42 @@
+version: '3.4'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+     - ./:/var/www
+     -  ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - app-network
+
+  #Nginx Service
+  webserver:
+    image: nginx:alpine
+    container_name: webserver
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./:/var/www 
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - app-network
+
+  ionic:
+    build: ./docker/frontend
+    volumes:
+     - ./frontend:/app
+    ports:
+      - "8081:8081"
+      
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge
+  
